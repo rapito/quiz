@@ -16,6 +16,7 @@ import (
 type CompoundPair struct {
 	prefix string
 	suffix string
+//	prefixes []string
 }
 
 var DEFAULT_FILE = currentPath() + "./word.list"
@@ -59,16 +60,21 @@ func findLongestWord2(filename string) string {
 		compound := stack.Pop().(CompoundPair)
 		word := string(compound.prefix)
 		suffix := string(compound.suffix)
+//		fmt.Printf("word: %s, suffix: %s\n", word, suffix)
 		if trie.HasWord(suffix) && len(word) > len(longest) {
+//			fmt.Println("HasWord :D " + word)
 			longest = word
 
-		} else {
-			prefixes := trie.PrefixesOfWord(word)
-			for _, prefix := range prefixes {
-				suffix := word[len(prefix):]
-				stack.Push(CompoundPair{word, suffix})
-			}
 		}
+//		else {
+//			prefixes := trie.PrefixesOfWord(word)
+//			for i, prefix := range prefixes {
+//				fmt.Printf("prefixes index:%d prefix:%s size:%d\n", i, prefix, len(prefixes))
+//				suffix := word[len(prefix):]
+//				fmt.Printf("suffix %s\n", suffix)
+//				stack.Push(CompoundPair{word, suffix})
+//			}
+//		}
 	}
 
 	return longest

@@ -69,16 +69,17 @@ func (t *Trie) PrefixesOfWord(word string) []string {
 // Return whether the Trie has or not the word
 func (t *Trie) HasWord(word string) bool {
 
+//	fmt.Println("HasWord: " + word);
 	currentNode := t.root
 
-	for i := 0; i < len(word); i++ {
-		char := word[i]
+	for i,char := range word {
+//		char := word[i]
 		// append to prefix
 		if currentNode.isWord && i == len(word)-1 {
 			return true;
 		}
 
-		child := currentNode.children[char]
+		child := currentNode.children[byte(char)]
 		if child == nil {
 			return false
 		}
@@ -87,7 +88,6 @@ func (t *Trie) HasWord(word string) bool {
 
 	return true
 }
-
 
 func NewNode(char byte) *Node {
 	return &Node{
