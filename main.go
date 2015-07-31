@@ -16,7 +16,6 @@ import (
 type CompoundPair struct {
 	prefix string
 	suffix string
-//	prefixes []string
 }
 
 var DEFAULT_FILE = currentPath() + "./word.list"
@@ -26,30 +25,55 @@ func main() {
 	file := DEFAULT_FILE
 	if len(os.Args) > 1 {
 		file = os.Args[1]
+		if (file == "-h") {
+			printUsage()
+			return
+		}
+
 	}
 
-	word := findLongestWord2(file)
+	word := findLongestWord(file)
 	fmt.Printf("The longest compound-word is: %s\n", word)
 }
 
-func findLongestWord2(filename string) string {
+// Looks longest compound word on the filename
+// passed as an argument.
+//
+// Basically whats happening is: We store all words on a Trie Tree,
+// then, for each inserted word, get all words that have at least
+// one previously scanned word as a prefix; We store this word as a
+// potential candidate alongside the separated-remaining suffix.
+// Then we loop until our Stack is empty by  popping out candidates. On
+// each candidate, we check if the suffix is already a word on the tree
+// and if the full word length is greater than our longest one (which is nil at the beggining).
+// If not, then we check if the suffix, may be another compound word itself
+// by breaking it down to prefixes and adding candidates to the stack as well.
+//
+func findLongestWord(filename string) string {
 	longest := "" // empty base string
 
 	// Read and defer close file
 	file, err := os.Open(filename)
 	if err != nil {
+		fmt.Println("Make sure you have word.list alongside the executable.")
 		fmt.Println(err)
+		printUsage();
 		os.Exit(1)
 	}
 	defer file.Close()
 
+	// Start our scanner and initialize our
+	// needed collections
 	scn := bufio.NewScanner(file)
-	trie := collections.NewTrie()
-	stack := collections.NewStack()
+	trie := collections.NewTrie() // stores words and lookup prefixes
+	stack := collections.NewStack() // saves compound candidates
 
 	for scn.Scan() {
 		word := scn.Text()
+
 		prefixes := trie.Insert(word)
+		// loop through the prefixes found while inserting the word,
+		// and push to the stack potential candidates.
 		for _, prefix := range prefixes {
 			suffix := word[len(prefix):]
 			stack.Push(CompoundPair{word, suffix})
@@ -60,51 +84,32 @@ func findLongestWord2(filename string) string {
 		compound := stack.Pop().(CompoundPair)
 		word := string(compound.prefix)
 		suffix := string(compound.suffix)
-//		fmt.Printf("word: %s, suffix: %s\n", word, suffix)
+		// if the suffix is a word itself, then just compare lenghts
 		if trie.HasWord(suffix) && len(word) > len(longest) {
-//			fmt.Println("HasWord :D " + word)
 			longest = word
-
+		} else {
+			// break own suffix to see if it is a compound word itself.
+			prefixes := trie.PrefixesOfWord(suffix)
+			for _, prefix := range prefixes {
+				suffix := suffix[len(prefix):] // get new suffix
+				stack.Push(CompoundPair{word, suffix})
+			}
 		}
-//		else {
-//			prefixes := trie.PrefixesOfWord(word)
-//			for i, prefix := range prefixes {
-//				fmt.Printf("prefixes index:%d prefix:%s size:%d\n", i, prefix, len(prefixes))
-//				suffix := word[len(prefix):]
-//				fmt.Printf("suffix %s\n", suffix)
-//				stack.Push(CompoundPair{word, suffix})
-//			}
-//		}
 	}
 
 	return longest
 }
 
-// Looks longest compound word on the filename
-// passed as an argument.
-func findLongestWord(filename string) string {
-
-	word := "" // empty base string
-
-	// Read and defer close file
-	file, err := os.Open(filename)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	// Bugger Read file with bufio's Scanner
-	// and simply compare lengths
-	scn := bufio.NewScanner(file)
-	for scn.Scan() {
-		t := scn.Text()
-		if len(t) > len(word) {
-			word = t
-		}
-	}
-
-	return word
+// Prints how-to-use
+func printUsage() {
+	fmt.Println("Usage:")
+	fmt.Println(" main.exe [command/file]")
+	fmt.Println(" command -h: displays this message")
+	fmt.Println(" file: absolute/relative path of file to load")
+	fmt.Println("Examples:")
+	fmt.Println(" main.exe \"C:\\user\\word.list\"")
+	fmt.Println(" main.exe word2.list")
+	fmt.Println(" main.exe -h (Displays this message)")
 }
 
 // Finds path of this file binary.
