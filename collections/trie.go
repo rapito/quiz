@@ -1,3 +1,5 @@
+// Simple Trie Structure enhanced to obtain
+// previous prefixes of a newly inserted word.
 package collections
 
 type Trie struct  {
@@ -19,14 +21,11 @@ func NewTrie() *Trie {
 // Inserts new word to trie and returns
 // prefixes found along the way
 func (t *Trie) Insert(word string) ([]string) {
-	//	fmt.Println("Insert: " + word);
 	previousWords := make([]string, 0)
 
 	currentNode := t.root
 	for i, char := range word {
-		//		fmt.Printf("i: %d, char: %s \n", i, string(char));
 
-		// append to prefix
 		if currentNode.isWord {
 			previousWords = append(previousWords, string(word[:i]))
 		}
@@ -51,7 +50,6 @@ func (t *Trie) PrefixesOfWord(word string) []string {
 
 	for i := 0; i < len(word); i++ {
 		char := word[i]
-		// append to prefix
 		if currentNode.isWord {
 			previousWords = append(previousWords, word[:i])
 		}
@@ -69,12 +67,9 @@ func (t *Trie) PrefixesOfWord(word string) []string {
 // Return whether the Trie has or not the word
 func (t *Trie) HasWord(word string) bool {
 
-//	fmt.Println("HasWord: " + word);
 	currentNode := t.root
 
 	for i,char := range word {
-//		char := word[i]
-		// append to prefix
 		if currentNode.isWord && i == len(word)-1 {
 			return true;
 		}
